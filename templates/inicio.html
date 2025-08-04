@@ -1,0 +1,24 @@
+{% extends "layout.html" %}
+{% block title %}Inicio - Historial de Rifas{% endblock %}
+{% block content %}
+    <h1 class="raffle-title">Historial de Rifas Recientes</h1>
+    <div class="history-grid">
+        {% for rifa in rifas %}
+            <div class="history-card">
+                <h3>{{ rifa.title }}</h3>
+                {% if rifa.images %}
+                    <img src="{{ url_for('static', filename='uploads/' + rifa.images[0]) }}" alt="{{ rifa.title }}">
+                {% endif %}
+                <p><strong>Estado:</strong> 
+                    {% if rifa.is_active %}
+                        <span style="color: lightgreen;">Activa</span>
+                    {% else %}
+                        <span style="color: lightcoral;">Inactiva</span>
+                    {% endif %}
+                </p>
+            </div>
+        {% else %}
+            <p>Aún no se han creado rifas.</p>
+        {% endfor %}
+    </div>
+{% endblock %}

@@ -1,0 +1,66 @@
+{% extends "layout.html" %}
+{% block title %}Comprar Boletos{% endblock %}
+{% block content %}
+    {% if raffle %}
+        <h1 class="raffle-title">{{ settings.main_title }}</h1>
+        <h2 class="raffle-date">{{ settings.raffle_date }}</h2>
+
+        <div class="carousel">
+            <div class="carousel-inner">
+                {% if raffle.images %}
+                    {% for image in raffle.images %}
+                    <div class="carousel-item">
+                        <img src="{{ url_for('static', filename='uploads/' + image) }}" alt="{{ raffle.title }}">
+                    </div>
+                    {% endfor %}
+                {% else %}
+                     <div class="carousel-item">
+                        <img src="https://via.placeholder.com/800x400" alt="Sin Imagen">
+                    </div>
+                {% endif %}
+            </div>
+            <button class="carousel-control prev">&lt;</button>
+            <button class="carousel-control next">&gt;</button>
+        </div>
+
+        <div class="ticket-info">
+            <p>{{ settings.ticket_price_info }}</p>
+        </div>
+
+        <div class="actions">
+            <h3>Haz click en tu número de la suerte</h3>
+            <button id="maquinita-btn" class="action-btn">MAQUINITA DE LA SUERTE</button>
+        </div>
+
+        <div id="ticket-grid" class="ticket-grid">
+            {% for ticket in raffle.tickets %}
+            <div class="ticket {{ ticket.status }}" data-number="{{ ticket.number }}">{{ ticket.number }}</div>
+            {% endfor %}
+        </div>
+
+        <div id="modal" class="modal">
+            <div class="modal-content">
+                <span class="close-btn">&times;</span>
+                <h3>LLENA TUS DATOS Y DA CLICK EN APARTAR</h3>
+                <p><span id="selected-count">0</span> BOLETOS SELECCIONADOS</p>
+                <form id="whatsapp-form">
+                    <input type="text" id="name" placeholder="NOMBRE(S)" required>
+                    <input type="text" id="lastname" placeholder="APELLIDOS" required>
+                    <input type="tel" id="phone" placeholder="NÚMERO DE TELÉFONO (10 dígitos)" required pattern="\d{10}">
+                    <button type="submit" class="apartar-btn">APARTAR</button>
+                </form>
+                <p class="redirect-info">¡Al finalizar serás redirigido a WhatsApp para enviar la información de tu boleto!</p>
+            </div>
+        </div>
+
+        <div id="apartar-seccion" class="apartar-seccion" style="display: none;">
+            <h4>Boletos Seleccionados:</h4>
+            <div id="selected-tickets-list"></div>
+            <button id="confirm-apartar-btn" class="action-btn">→ APARTAR ←</button>
+        </div>
+
+    {% else %}
+        <h1 class="raffle-title">No hay rifas activas en este momento.</h1>
+        <p>Por favor, vuelve más tarde o contacta al administrador.</p>
+    {% endif %}
+{% endblock %}

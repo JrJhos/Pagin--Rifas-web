@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Rifas Premium{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        :root {
+            --main-color: {{ settings.main_color }};
+            --background-color: {{ settings.background_color }};
+            --text-color: {{ settings.text_color }};
+        }
+        .logo-container {
+            height: {{ settings.logo_size }}px;
+        }
+    </style>
+</head>
+<body>
+    <header class="main-header">
+        <div class="logo-container">
+            {% if settings.logo_image %}
+                <img src="{{ url_for('static', filename='uploads/' + settings.logo_image) }}" alt="Logo">
+            {% else %}
+                <img src="https://via.placeholder.com/100" alt="Logo Placeholder">
+            {% endif %}
+        </div>
+        <nav>
+            <a href="{{ url_for('inicio') }}" class="{{ 'active' if request.endpoint == 'inicio' else '' }}">Inicio</a>
+            <a href="{{ url_for('comprar_boletos') }}" class="{{ 'active' if request.endpoint == 'comprar_boletos' else '' }}">Comprar Boletos</a>
+            <a href="{{ url_for('verificador') }}" class="{{ 'active' if request.endpoint == 'verificador' else '' }}">Verificador de Boletos</a>
+            <a href="{{ url_for('contacto') }}" class="{{ 'active' if request.endpoint == 'contacto' else '' }}">Contacto</a>
+            <a href="{{ url_for('metodos_de_pago') }}" class="{{ 'active' if request.endpoint == 'metodos_de_pago' else '' }}">Métodos de Pago</a>
+        </nav>
+    </header>
+
+    <main class="container">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="main-footer">
+        <div class="social-icons">
+            {% if settings.tiktok_link %}
+            <a href="{{ settings.tiktok_link }}" target="_blank">
+                <img src="https://logodownload.org/wp-content/uploads/2019/08/tiktok-logo-1.png" alt="TikTok">
+            </a>
+            {% endif %}
+            {% if settings.instagram_link %}
+            <a href="{{ settings.instagram_link }}" target="_blank">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png" alt="Instagram">
+            </a>
+            {% endif %}
+        </div>
+    </footer>
+
+    <script>
+        const WHATSAPP_NUMBER = "{{ settings.whatsapp_number }}";
+    </script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

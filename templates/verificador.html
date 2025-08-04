@@ -1,0 +1,49 @@
+{% extends "layout.html" %}
+{% block title %}Verificador de Boletos{% endblock %}
+{% block content %}
+    <h1 class="raffle-title">Verificador de Boletos</h1>
+    {% if raffle %}
+        <h2>Para la rifa: {{ raffle.title }}</h2>
+        <div class="verifier-form">
+            <form method="POST">
+                <label for="phone_number">Introduce tu número de teléfono y haz click en "Verificar"</label>
+                <br><br>
+                <input type="tel" name="phone_number" id="phone_number" required>
+                <button type="submit">Verificar</button>
+            </form>
+        </div>
+
+        {% if ticket_details is not none %}
+            {% if ticket_details %}
+            <h3>Boletos encontrados para tu número:</h3>
+            <table class="results-table">
+                <thead>
+                    <tr>
+                        <th>Número</th>
+                        <th>Nombre</th>
+                        <th>Apellido</th>
+                        <th>Pagado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ticket in ticket_details %}
+                    <tr>
+                        <td>{{ ticket.number }}</td>
+                        <td>{{ ticket.name }}</td>
+                        <td>{{ ticket.lastname }}</td>
+                        <td class="{{ 'paid-yes' if ticket.get('paid') == 'Sí' else 'paid-no' }}">
+                            {{ ticket.get('paid', 'No') }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p>No se encontraron boletos apartados con ese número de teléfono para la rifa activa.</p>
+            {% endif %}
+        {% endif %}
+
+    {% else %}
+        <p>No hay ninguna rifa activa en este momento para verificar.</p>
+    {% endif %}
+{% endblock %}
