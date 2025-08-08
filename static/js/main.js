@@ -147,9 +147,9 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     }
-});
-// --- Lógica para el menú hamburguesa ---
-    const hamburgerBtn = document.querySelector('.hamburger-btn');
+
+    // --- CÓDIGO AÑADIDO PARA EL MENÚ HAMBURGUESA ---
+    const hamburgerBtn = document.getElementById('hamburger-btn');
     const mainNav = document.getElementById('main-nav');
 
     if (hamburgerBtn && mainNav) {
@@ -157,3 +157,5 @@ document.addEventListener('DOMContentLoaded', function() {
             mainNav.classList.toggle('show');
         });
     }
+
+}); // <-- FIN DEL BLOQUE 'DOMContentLoaded'

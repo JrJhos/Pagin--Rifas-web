@@ -22,6 +22,7 @@ body {
     align-items: center;
     padding: 10px 5%;
     border-bottom: 5px solid var(--main-color);
+    position: relative; /* Necesario para el menú desplegable */
 }
 
 .logo-container {
@@ -35,6 +36,7 @@ body {
     object-fit: cover;
 }
 
+/* Navegación para pantallas grandes */
 nav a {
     color: var(--text-color);
     text-decoration: none;
@@ -312,7 +314,8 @@ nav a:hover, nav a.active {
 .social-icons img:hover {
     transform: scale(1.2);
 }
-/* --- ESTILOS PARA EL MENÚ RESPONSIVO --- */
+
+/* --- ESTILOS PARA EL MENÚ RESPONSIVO (NUEVO) --- */
 
 .hamburger-btn {
     display: none; /* Oculto por defecto en pantallas grandes */
@@ -340,7 +343,7 @@ nav a:hover, nav a.active {
         border-top: 1px solid #333;
     }
 
-    /* Estilo para mostrar el menú cuando se hace clic */
+    /* Estilo para mostrar el menú cuando tiene la clase 'show' */
     nav#main-nav.show {
         display: flex;
     }
@@ -354,6 +357,7 @@ nav a:hover, nav a.active {
     nav#main-nav a {
         text-align: center;
         padding: 15px;
+        margin: 0; /* Quitamos el margen horizontal */
         border-bottom: 1px solid #333;
     }
 }

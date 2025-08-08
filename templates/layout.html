@@ -18,24 +18,24 @@
 </head>
 <body>
     <header class="main-header">
-    <div class="logo-container">
-        {% if settings.logo_image %}
-            <img src="{{ url_for('static', filename='uploads/' + settings.logo_image) }}" alt="Logo">
-        {% else %}
-            <img src="https://via.placeholder.com/100" alt="Logo Placeholder">
-        {% endif %}
-    </div>
+        <div class="logo-container">
+            {% if settings.logo_image %}
+                <img src="{{ url_for('static', filename='uploads/' + settings.logo_image) }}" alt="Logo">
+            {% else %}
+                <img src="https://via.placeholder.com/100" alt="Logo Placeholder">
+            {% endif %}
+        </div>
 
-    <button class="hamburger-btn">☰</button>
+        <button class="hamburger-btn" id="hamburger-btn">☰</button>
 
-    <nav id="main-nav">
-        <a href="{{ url_for('inicio') }}" class="{{ 'active' if request.endpoint == 'inicio' else '' }}">Inicio</a>
-        <a href="{{ url_for('comprar_boletos') }}" class="{{ 'active' if request.endpoint == 'comprar_boletos' else '' }}">Comprar Boletos</a>
-        <a href="{{ url_for('verificador') }}" class="{{ 'active' if request.endpoint == 'verificador' else '' }}">Verificador de Boletos</a>
-        <a href="{{ url_for('contacto') }}" class="{{ 'active' if request.endpoint == 'contacto' else '' }}">Contacto</a>
-        <a href="{{ url_for('metodos_de_pago') }}" class="{{ 'active' if request.endpoint == 'metodos_de_pago' else '' }}">Métodos de Pago</a>
-    </nav>
-</header>
+        <nav id="main-nav">
+            <a href="{{ url_for('inicio') }}" class="{{ 'active' if request.endpoint == 'inicio' else '' }}">Inicio</a>
+            <a href="{{ url_for('comprar_boletos') }}" class="{{ 'active' if request.endpoint == 'comprar_boletos' else '' }}">Comprar Boletos</a>
+            <a href="{{ url_for('verificador') }}" class="{{ 'active' if request.endpoint == 'verificador' else '' }}">Verificador de Boletos</a>
+            <a href="{{ url_for('contacto') }}" class="{{ 'active' if request.endpoint == 'contacto' else '' }}">Contacto</a>
+            <a href="{{ url_for('metodos_de_pago') }}" class="{{ 'active' if request.endpoint == 'metodos_de_pago' else '' }}">Métodos de Pago</a>
+        </nav>
+    </header>
 
     <main class="container">
         {% block content %}{% endblock %}
