@@ -3,6 +3,17 @@ import json
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from werkzeug.utils import secure_filename
 
+# --- INICIO DE LA MODIFICACIÓN ---
+
+# 1. DEFINIR LAS RUTAS AL DISCO PERSISTENTE
+# Esta es la carpeta segura que creaste en Render.
+DATA_DIR = '/var/data'
+RIFAS_FILE = os.path.join(DATA_DIR, 'rifas.json')
+SETTINGS_FILE = os.path.join(DATA_DIR, 'settings.json')
+
+# --- FIN DE LA MODIFICACIÓN ---
+
+
 # --- CONFIGURACIÓN DE LA APLICACIÓN ---
 app = Flask(__name__)
 app.secret_key = 'tu_clave_secreta_aqui_cambiala_por_algo_mas_seguro'
@@ -14,15 +25,22 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-# --- BASE DE DATOS (SIMULADA CON ARCHIVOS JSON) ---
+# --- BASE DE DATOS (AHORA CONECTADA AL DISCO PERSISTENTE) ---
+
+# 2. FUNCIÓN 'load_data' MODIFICADA
 def load_data():
-    if not os.path.exists('rifas.json'):
-        with open('rifas.json', 'w') as f:
+    # Crea el directorio de datos si es la primera vez que se ejecuta.
+    os.makedirs(DATA_DIR, exist_ok=True)
+
+    # Si el archivo rifas.json no existe en el disco, lo crea vacío.
+    if not os.path.exists(RIFAS_FILE):
+        with open(RIFAS_FILE, 'w', encoding='utf-8') as f:
             json.dump([], f)
-    if not os.path.exists('settings.json'):
-        # Añadimos los nuevos campos para la configuración
-        with open('settings.json', 'w') as f:
-            json.dump({
+
+    # Si el archivo settings.json no existe, lo crea con tus valores por defecto.
+    if not os.path.exists(SETTINGS_FILE):
+        with open(SETTINGS_FILE, 'w', encoding='utf-8') as f:
+            default_settings = {
                 "whatsapp_number": "527779421271",
                 "main_color": "#DC3545",
                 "background_color": "#212529",
@@ -36,24 +54,30 @@ def load_data():
                 "payment_methods_info": "Escribe aquí tus métodos de pago.",
                 "tiktok_link": "",
                 "instagram_link": ""
-            }, f)
+            }
+            json.dump(default_settings, f, indent=4, ensure_ascii=False)
 
-    with open('rifas.json', 'r', encoding='utf-8') as f:
+    # Ahora, lee los datos siempre desde el disco seguro.
+    with open(RIFAS_FILE, 'r', encoding='utf-8') as f:
         rifas = json.load(f)
-    with open('settings.json', 'r', encoding='utf-8') as f:
+    with open(SETTINGS_FILE, 'r', encoding='utf-8') as f:
         settings = json.load(f)
 
     return rifas, settings
 
+# 3. FUNCIÓN 'save_data' MODIFICADA
 def save_data(rifas=None, settings=None):
+    # Siempre guarda los cambios en el disco seguro.
     if rifas is not None:
-        with open('rifas.json', 'w', encoding='utf-8') as f:
+        with open(RIFAS_FILE, 'w', encoding='utf-8') as f:
             json.dump(rifas, f, indent=4, ensure_ascii=False)
     if settings is not None:
-        with open('settings.json', 'w', encoding='utf-8') as f:
+        with open(SETTINGS_FILE, 'w', encoding='utf-8') as f:
             json.dump(settings, f, indent=4, ensure_ascii=False)
 
+
 # --- RUTAS PÚBLICAS (PARA USUARIOS) ---
+# (ESTA SECCIÓN NO SE MODIFICA)
 
 @app.route('/')
 def comprar_boletos():
@@ -122,6 +146,7 @@ def apartar_boletos():
     return {"success": True}
 
 # --- RUTAS DEL PANEL DE ADMINISTRACIÓN ---
+# (ESTA SECCIÓN NO SE MODIFICA)
 
 @app.route('/admin', methods=['GET', 'POST'])
 def login():
