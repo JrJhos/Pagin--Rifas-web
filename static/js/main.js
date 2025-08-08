@@ -148,3 +148,12 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 });
+// --- Lógica para el menú hamburguesa ---
+    const hamburgerBtn = document.querySelector('.hamburger-btn');
+    const mainNav = document.getElementById('main-nav');
+
+    if (hamburgerBtn && mainNav) {
+        hamburgerBtn.addEventListener('click', function() {
+            mainNav.classList.toggle('show');
+        });
+    }

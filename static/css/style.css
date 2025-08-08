@@ -229,7 +229,7 @@ nav a:hover, nav a.active {
     padding: 20px;
     margin: 20px auto;
     max-width: 800px;
-    text-align: left;
+    text-align: center;
     white-space: pre-wrap;
     border-radius: 10px;
 }
@@ -311,4 +311,49 @@ nav a:hover, nav a.active {
 }
 .social-icons img:hover {
     transform: scale(1.2);
+}
+/* --- ESTILOS PARA EL MENÚ RESPONSIVO --- */
+
+.hamburger-btn {
+    display: none; /* Oculto por defecto en pantallas grandes */
+    background: none;
+    border: 2px solid var(--text-color);
+    color: var(--text-color);
+    font-size: 24px;
+    cursor: pointer;
+    padding: 5px 10px;
+    border-radius: 5px;
+}
+
+/* Media Query: Estilos que se aplican solo en pantallas pequeñas (celulares) */
+@media (max-width: 850px) {
+    /* Ocultamos la navegación normal */
+    nav#main-nav {
+        display: none;
+        flex-direction: column;
+        position: absolute;
+        top: 100%; /* Justo debajo de la barra del menú */
+        left: 0;
+        width: 100%;
+        background-color: #1a1a1a;
+        z-index: 1000;
+        border-top: 1px solid #333;
+    }
+
+    /* Estilo para mostrar el menú cuando se hace clic */
+    nav#main-nav.show {
+        display: flex;
+    }
+
+    /* Hacemos visible el botón hamburguesa */
+    .hamburger-btn {
+        display: block;
+    }
+
+    /* Ajustamos los enlaces para que se vean bien en vertical */
+    nav#main-nav a {
+        text-align: center;
+        padding: 15px;
+        border-bottom: 1px solid #333;
+    }
 }
