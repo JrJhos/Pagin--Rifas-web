@@ -1,43 +1,41 @@
 import os
 import json
-from flask import Flask, render_template, request, redirect, url_for, flash, session
+from flask import Flask, render_template, request, redirect, url_for, flash, session, send_from_directory
 from werkzeug.utils import secure_filename
-
-# --- INICIO DE LA MODIFICACIÓN ---
-
-# 1. DEFINIR LAS RUTAS AL DISCO PERSISTENTE
-# Esta es la carpeta segura que creaste en Render.
-DATA_DIR = '/var/data'
-RIFAS_FILE = os.path.join(DATA_DIR, 'rifas.json')
-SETTINGS_FILE = os.path.join(DATA_DIR, 'settings.json')
-
-# --- FIN DE LA MODIFICACIÓN ---
-
 
 # --- CONFIGURACIÓN DE LA APLICACIÓN ---
 app = Flask(__name__)
 app.secret_key = 'tu_clave_secreta_aqui_cambiala_por_algo_mas_seguro'
-UPLOAD_FOLDER = 'static/uploads'
+
+# --- CONFIGURACIÓN DE RUTAS PERSISTENTES ---
+# Directorio raíz del disco persistente en Render
+DISK_ROOT = '/var/data'
+
+# Ubicación para archivos de datos (JSON) dentro del disco
+DB_DIR = os.path.join(DISK_ROOT, 'db')
+RIFAS_FILE = os.path.join(DB_DIR, 'rifas.json')
+SETTINGS_FILE = os.path.join(DB_DIR, 'settings.json')
+
+# Ubicación para las imágenes subidas (DENTRO del disco)
+UPLOAD_FOLDER = os.path.join(DISK_ROOT, 'uploads')
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-# --- BASE DE DATOS (AHORA CONECTADA AL DISCO PERSISTENTE) ---
-
-# 2. FUNCIÓN 'load_data' MODIFICADA
+# --- BASE DE DATOS (FUNCIONES MODIFICADAS) ---
 def load_data():
-    # Crea el directorio de datos si es la primera vez que se ejecuta.
-    os.makedirs(DATA_DIR, exist_ok=True)
+    # Crea los directorios en el disco persistente si no existen
+    os.makedirs(DB_DIR, exist_ok=True)
+    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-    # Si el archivo rifas.json no existe en el disco, lo crea vacío.
     if not os.path.exists(RIFAS_FILE):
         with open(RIFAS_FILE, 'w', encoding='utf-8') as f:
             json.dump([], f)
-
-    # Si el archivo settings.json no existe, lo crea con tus valores por defecto.
+    
     if not os.path.exists(SETTINGS_FILE):
         with open(SETTINGS_FILE, 'w', encoding='utf-8') as f:
             default_settings = {
@@ -57,17 +55,14 @@ def load_data():
             }
             json.dump(default_settings, f, indent=4, ensure_ascii=False)
 
-    # Ahora, lee los datos siempre desde el disco seguro.
     with open(RIFAS_FILE, 'r', encoding='utf-8') as f:
         rifas = json.load(f)
     with open(SETTINGS_FILE, 'r', encoding='utf-8') as f:
         settings = json.load(f)
-
+    
     return rifas, settings
 
-# 3. FUNCIÓN 'save_data' MODIFICADA
 def save_data(rifas=None, settings=None):
-    # Siempre guarda los cambios en el disco seguro.
     if rifas is not None:
         with open(RIFAS_FILE, 'w', encoding='utf-8') as f:
             json.dump(rifas, f, indent=4, ensure_ascii=False)
@@ -75,10 +70,13 @@ def save_data(rifas=None, settings=None):
         with open(SETTINGS_FILE, 'w', encoding='utf-8') as f:
             json.dump(settings, f, indent=4, ensure_ascii=False)
 
+# --- RUTA PARA SERVIR IMÁGENES DESDE EL DISCO ---
+@app.route('/uploads/<filename>')
+def uploaded_file(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 # --- RUTAS PÚBLICAS (PARA USUARIOS) ---
-# (ESTA SECCIÓN NO SE MODIFICA)
-
+# ... (todas tus rutas públicas como /, /inicio, etc. van aquí sin cambios) ...
 @app.route('/')
 def comprar_boletos():
     rifas, settings = load_data()
@@ -88,7 +86,6 @@ def comprar_boletos():
 @app.route('/inicio')
 def inicio():
     rifas, settings = load_data()
-    # Ordenar rifas por ID descendente para mostrar las más recientes primero y tomar 6
     historial_rifas = sorted(rifas, key=lambda r: r['id'], reverse=True)[:6]
     return render_template('inicio.html', rifas=historial_rifas, settings=settings)
 
@@ -127,7 +124,6 @@ def apartar_boletos():
     if not active_raffle:
         return {"success": False, "message": "No hay rifa activa."}
 
-    # Verificar si el teléfono ya ha apartado boletos si la opción está activa
     if active_raffle.get('prevent_duplicates'):
         for ticket in active_raffle.get('tickets', []):
             if ticket.get('phone') == data['phone']:
@@ -140,13 +136,12 @@ def apartar_boletos():
                 ticket['name'] = data['name']
                 ticket['lastname'] = data['lastname']
                 ticket['phone'] = data['phone']
-                ticket['paid'] = 'No' # Por defecto no está pagado
+                ticket['paid'] = 'No'
     
     save_data(rifas=rifas)
     return {"success": True}
 
 # --- RUTAS DEL PANEL DE ADMINISTRACIÓN ---
-# (ESTA SECCIÓN NO SE MODIFICA)
 
 @app.route('/admin', methods=['GET', 'POST'])
 def login():
@@ -194,17 +189,55 @@ def new_raffle():
             image_filenames.append(filename)
 
     nueva_rifa = {
-        "id": len(rifas) + 1,
+        "id": len(rifas) + 1 if rifas else 1,
         "title": title,
-        "images": image_filenames, # Ahora es una lista de imágenes
+        "images": image_filenames,
         "is_active": False,
-        "prevent_duplicates": False, # Nueva opción
+        "prevent_duplicates": False,
         "tickets": [{"number": f"{i:0{len(str(ticket_count-1))}}", "status": "disponible"} for i in range(ticket_count)]
     }
     rifas.append(nueva_rifa)
     save_data(rifas=rifas)
     flash(f'Rifa "{title}" creada.', 'success')
     return redirect(url_for('dashboard'))
+
+# --- NUEVA RUTA PARA EDITAR RIFAS ---
+@app.route('/admin/raffle/edit/<int:raffle_id>', methods=['GET', 'POST'])
+def edit_raffle(raffle_id):
+    if 'admin_logged_in' not in session:
+        return redirect(url_for('login'))
+    
+    rifas, _ = load_data()
+    raffle_to_edit = next((r for r in rifas if r.get('id') == raffle_id), None)
+
+    if raffle_to_edit is None:
+        flash('Rifa no encontrada.', 'danger')
+        return redirect(url_for('dashboard'))
+
+    if request.method == 'POST':
+        # Actualizar datos de la rifa
+        raffle_to_edit['title'] = request.form['title']
+        
+        # Opcionalmente, manejar el cambio de imágenes
+        images = request.files.getlist('images')
+        image_filenames = []
+        for image in images:
+            if image and image.filename != '' and allowed_file(image.filename):
+                filename = secure_filename(image.filename)
+                image.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                image_filenames.append(filename)
+        
+        # Si se subieron nuevas imágenes, reemplazan las antiguas. Si no, se mantienen.
+        if image_filenames:
+            raffle_to_edit['images'] = image_filenames
+
+        save_data(rifas=rifas)
+        flash('Rifa actualizada correctamente.', 'success')
+        return redirect(url_for('dashboard'))
+
+    # Si es un método GET, simplemente muestra el formulario de edición
+    return render_template('admin/edit_raffle.html', raffle=raffle_to_edit)
+
 
 @app.route('/admin/settings/update', methods=['POST'])
 def update_settings():
@@ -285,7 +318,7 @@ def release_ticket(raffle_id, ticket_number):
     rifas, _ = load_data()
     for rifa in rifas:
         if rifa['id'] == raffle_id:
-            for ticket in rifa.get('tickets', []):
+            for ticket in rifa['tickets']:
                 if ticket['number'] == ticket_number:
                     ticket['status'] = 'disponible'
                     ticket.pop('name', None)
@@ -298,6 +331,7 @@ def release_ticket(raffle_id, ticket_number):
     return redirect(url_for('dashboard'))
 
 if __name__ == '__main__':
-    if not os.path.exists(UPLOAD_FOLDER):
-        os.makedirs(UPLOAD_FOLDER)
+    # Esta línea ahora es manejada por la función load_data()
+    # if not os.path.exists(UPLOAD_FOLDER):
+    #     os.makedirs(UPLOAD_FOLDER)
     app.run(debug=True)

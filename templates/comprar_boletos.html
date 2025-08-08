@@ -10,7 +10,7 @@
                 {% if raffle.images %}
                     {% for image in raffle.images %}
                     <div class="carousel-item">
-                        <img src="{{ url_for('static', filename='uploads/' + image) }}" alt="{{ raffle.title }}">
+                        <img src="{{ url_for('uploaded_file', filename=image) }}" alt="{{ raffle.title }}">
                     </div>
                     {% endfor %}
                 {% else %}

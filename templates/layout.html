@@ -20,7 +20,7 @@
     <header class="main-header">
         <div class="logo-container">
             {% if settings.logo_image %}
-                <img src="{{ url_for('static', filename='uploads/' + settings.logo_image) }}" alt="Logo">
+                <img src="{{ url_for('uploaded_file', filename=settings.logo_image) }}" alt="Logo">
             {% else %}
                 <img src="https://via.placeholder.com/100" alt="Logo Placeholder">
             {% endif %}

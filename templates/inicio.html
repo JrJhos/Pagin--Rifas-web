@@ -7,7 +7,7 @@
             <div class="history-card">
                 <h3>{{ rifa.title }}</h3>
                 {% if rifa.images %}
-                    <img src="{{ url_for('static', filename='uploads/' + rifa.images[0]) }}" alt="{{ rifa.title }}">
+                    <img src="{{ url_for('uploaded_file', filename=rifa.images[0]) }}" alt="{{ rifa.title }}">
                 {% endif %}
                 <p><strong>Estado:</strong> 
                     {% if rifa.is_active %}
